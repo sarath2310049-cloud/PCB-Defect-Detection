@@ -82,6 +82,9 @@ else:
                 # Make prediction
                 prediction = model.predict(img_array, verbose=0)[0][0]
                 
+                # Convert to float (fix for progress bar)
+                prediction = float(prediction)
+                
                 # Determine result
                 if prediction > 0.5:
                     result = "UNDEFECTIVE"
@@ -98,8 +101,8 @@ else:
                 st.markdown(f"### {icon} {result}")
                 st.markdown(f"**Confidence:** {confidence:.2f}%")
                 
-                # Progress bar for confidence
-                st.progress(confidence / 100)
+                # Progress bar for confidence (convert to float)
+                st.progress(float(confidence / 100))
                 
                 # Additional info
                 if result == "DEFECTIVE":
