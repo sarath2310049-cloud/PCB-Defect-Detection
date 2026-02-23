@@ -1,4 +1,3 @@
-#app.py
 import streamlit as st
 import tensorflow as tf
 from PIL import Image
@@ -62,63 +61,82 @@ else:
     )
 
     if uploaded_file is not None:
-        # Display the uploaded image
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("📷 Uploaded Image")
+        try:
+            # Load and convert image to RGB
             image = Image.open(uploaded_file)
-            st.image(image, use_container_width=True)
-        
-        # Preprocess and predict
-        with col2:
-            st.subheader("🔮 Prediction Result")
             
-            with st.spinner('Analyzing PCB...'):
-                # Preprocess image
-                img = image.resize((128, 128))
-                img_array = np.array(img) / 255.0
-                img_array = np.expand_dims(img_array, axis=0)
+            # CRITICAL: Convert to RGB (handles grayscale, RGBA, etc.)
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            
+            # Display the uploaded image
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("📷 Uploaded Image")
+                st.image(image, use_container_width=True)
+            
+            # Preprocess and predict
+            with col2:
+                st.subheader("🔮 Prediction Result")
                 
-                # Make prediction
-                prediction = model.predict(img_array, verbose=0)[0][0]
-                
-                # Convert to float (fix for progress bar)
-                prediction = float(prediction)
-                
-                # Determine result
-                if prediction > 0.5:
-                    result = "UNDEFECTIVE"
-                    confidence = prediction * 100
-                    color = "green"
-                    icon = "✅"
-                else:
-                    result = "DEFECTIVE"
-                    confidence = (1 - prediction) * 100
-                    color = "red"
-                    icon = "❌"
-                
-                # Display result
-                st.markdown(f"### {icon} {result}")
-                st.markdown(f"**Confidence:** {confidence:.2f}%")
-                
-                # Progress bar for confidence (convert to float)
-                st.progress(float(confidence / 100))
-                
-                # Additional info
-                if result == "DEFECTIVE":
-                    st.error("⚠️ Defect detected! This PCB needs inspection.")
-                else:
-                    st.success("✅ No defects found! PCB is good.")
+                with st.spinner('Analyzing PCB...'):
+                    # Resize to model input size
+                    img = image.resize((128, 128))
+                    
+                    # Convert to numpy array and normalize
+                    img_array = np.array(img, dtype=np.float32) / 255.0
+                    
+                    # Verify shape is correct (128, 128, 3)
+                    if img_array.shape != (128, 128, 3):
+                        st.error(f"❌ Invalid image shape: {img_array.shape}. Expected (128, 128, 3)")
+                    else:
+                        # Add batch dimension (1, 128, 128, 3)
+                        img_array = np.expand_dims(img_array, axis=0)
+                        
+                        # Make prediction
+                        prediction = model.predict(img_array, verbose=0)[0][0]
+                        
+                        # Convert to float (fix for progress bar)
+                        prediction = float(prediction)
+                        
+                        # Determine result
+                        if prediction > 0.5:
+                            result = "UNDEFECTIVE"
+                            confidence = prediction * 100
+                            color = "green"
+                            icon = "✅"
+                        else:
+                            result = "DEFECTIVE"
+                            confidence = (1 - prediction) * 100
+                            color = "red"
+                            icon = "❌"
+                        
+                        # Display result
+                        st.markdown(f"### {icon} {result}")
+                        st.markdown(f"**Confidence:** {confidence:.2f}%")
+                        
+                        # Progress bar for confidence (convert to float)
+                        st.progress(float(confidence / 100))
+                        
+                        # Additional info
+                        if result == "DEFECTIVE":
+                            st.error("⚠️ Defect detected! This PCB needs inspection.")
+                        else:
+                            st.success("✅ No defects found! PCB is good.")
+        
+        except Exception as e:
+            st.error(f"❌ Error processing image: {str(e)}")
+            st.info("Please try uploading a different image or check if the file is corrupted.")
 
     # Instructions
     st.markdown("---")
     st.markdown("### 📖 How to Use:")
     st.markdown("""
     1. Click **Browse files** above
-    2. Select a PCB image from your computer
+    2. Select a PCB image from your computer (JPG, JPEG, or PNG)
     3. Wait for the analysis (2-3 seconds)
-    4. View the detection result
+    4. View the detection result with confidence score
     """)
 
     # Footer
