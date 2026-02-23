@@ -23,10 +23,10 @@ def download_model():
     
     # Check if model already exists
     if not os.path.exists(model_path):
-        st.info("📥 Downloading model from Google Drive... (This may take 30-60 seconds)")
+        st.info("📥 Downloading updated model from Google Drive... (This may take 30-60 seconds)")
         
-        # Google Drive file ID extracted from your link
-        file_id = '15NeEfT7106PH6RnolnhPdHWwHLMz49yC'
+        # NEW Google Drive file ID from updated model
+        file_id = '1goyY8DHvX3dXkvW3q4bPV4lzmEW9M8iY'
         url = f'https://drive.google.com/uc?id={file_id}'
         
         try:
@@ -141,5 +141,5 @@ else:
 
     # Footer
     st.markdown("---")
-    st.markdown("**🔬 ML Model:** CNN with 3 Conv layers | **🎯 Accuracy:** ~85-90%")
+    st.markdown("**🔬 ML Model:** CNN with 3 Conv layers | **🎯 Accuracy:** ~85-90% | **Version:** 2.0")
     st.markdown("*Powered by TensorFlow & Streamlit*")
